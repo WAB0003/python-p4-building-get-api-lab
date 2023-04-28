@@ -10,11 +10,33 @@ db = SQLAlchemy(metadata=metadata)
 
 class Bakery(db.Model, SerializerMixin):
     __tablename__ = 'bakeries'
+    
+    serialize_rules = ('-baked_goods.bakery',) #! Make sure that serialized rules have a "," at the end
 
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+    
+    #!relationships
+    baked_goods = db.relationship('BakedGood', backref='bakery')
+    
+    def __repr__(self):
+        return f'Bakery: {self.name}'
+
 
 class BakedGood(db.Model, SerializerMixin):
     __tablename__ = 'baked_goods'
+    
+    serialize_rules = ('-bakery.baked_goods',) #! Make sure that serialized rules have a "," at the end
 
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    price = db.Column(db.Integer)
+    baker_id = db.Column(db.Integer, db.ForeignKey('bakeries.id'))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+
+    def __repr__(self):
+        return f'BakedGood: {self.name} | Price: {self.price}'
     

@@ -3,6 +3,8 @@
 from flask import Flask, make_response, jsonify
 from flask_migrate import Migrate
 
+import ipdb
+
 from models import db, Bakery, BakedGood
 
 app = Flask(__name__)
@@ -20,19 +22,41 @@ def index():
 
 @app.route('/bakeries')
 def bakeries():
-    return ''
-
+    bakery_list = []
+    all_bakeries = Bakery.query.all()
+    # ipdb.set_trace()
+    for bakery in all_bakeries:
+        bakery_dict = bakery.to_dict()
+        # bakery_dict = {
+        #     "name": bakery.name
+        # }
+        bakery_list.append(bakery_dict)
+    response = make_response(jsonify(bakery_list), 200, {"Content-Type":"application/json"})
+    return response
+    
+    
 @app.route('/bakeries/<int:id>')
 def bakery_by_id(id):
-    return ''
+    bakery = Bakery.query.filter(Bakery.id == id).first()
+    # ipdb.set_trace()
+    # bakery_dict = {"name": bakery.name}
+    bakery_dict = bakery.to_dict()
+    response = make_response(jsonify(bakery_dict), 200, {"Content-Type":"application/json"})
+    return response
 
 @app.route('/baked_goods/by_price')
 def baked_goods_by_price():
-    return ''
+    all_baked_goods = BakedGood.query.order_by(BakedGood.price.desc()).all() #!All goods in descending order
+    goods_list = [good.to_dict() for good in all_baked_goods]
+    
+    response = make_response(jsonify(goods_list), 200, {"Content-Type":"application/json"})
+    return response
 
 @app.route('/baked_goods/most_expensive')
 def most_expensive_baked_good():
-    return ''
+    most_expensive = BakedGood.query.order_by(BakedGood.price.desc()).first()
+    response = make_response(jsonify(most_expensive.to_dict()), 200, {"Content-Type":"application/json"})
+    return response
 
 if __name__ == '__main__':
     app.run(port=555, debug=True)
